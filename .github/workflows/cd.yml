@@ -1,9 +1,11 @@
-
 name: cd
 
 on:
   push:
     branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # optional, fixes Node.js warnings
 
 jobs:
   deploy:
@@ -11,16 +13,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout code
       - name: Check out code
         uses: actions/checkout@v4
-      
+
+      # Step 2: Setup Node.js
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
+      # Step 3: Install dependencies
       - name: Install dependencies
         run: npm ci
-      
+
+      # Step 4: Build app
       - name: Build App
         run: npm run build
+
+      # Step 5: Authenticate GCP
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      # Step 6: Setup gcloud CLI
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: crucial-ray-490222-n3
+
+      # Step 7: Build and push Docker image
+      - name: Build and Push Docker Image
+        run: |
+          gcloud builds submit \
+            --tag us-central1-docker.pkg.dev/crucial-ray-490222-n3/notely-ar-repo/notely:latest .

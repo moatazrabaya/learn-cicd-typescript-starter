@@ -6,6 +6,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # optional, fixes Node.js warnings
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   deploy:
@@ -48,6 +49,9 @@ jobs:
         run: |
           gcloud builds submit \
             --tag us-central1-docker.pkg.dev/crucial-ray-490222-n3/notely-ar-repo/notely:latest .
+
+      - name: Run Migration
+        run: npm run db:migrate
 
       - name: Deploy to Cloud Run
         run: gcloud run deploy notely --image us-central1-docker.pkg.dev/crucial-ray-490222-n3/notely-ar-repo/notely:latest --region us-central1 --allow-unauthenticated --project crucial-ray-490222-n3 --max-instances=4

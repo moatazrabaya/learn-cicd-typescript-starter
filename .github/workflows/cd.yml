@@ -24,3 +24,9 @@ jobs:
       
       - name: Build App
         run: npm run build
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Build and Push Docker Image
+        run: gcloud builds submit --tag REGION-docker.pkg.dev/crucial-ray-490222-n3/notely-ar-repo/notely:TAG .
